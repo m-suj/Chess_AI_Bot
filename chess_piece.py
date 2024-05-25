@@ -18,9 +18,12 @@ class Pawn(ChessPiece):
     def __init__(self, color) -> None:
         super().__init__(color, Piece.PAWN)
         self.value = 1
+        self.capture_moves_pawn = []
         if self.color == 'white':
+            self.capture_moves_pawn = [(1, 1), (-1, 1)]
             self.moves_list = [(0, 1)]
         else:
+            self.capture_moves_pawn = [(1, -1), (-1, -1)]
             self.moves_list = [(0, -1)]
 
 
@@ -29,7 +32,7 @@ class Rook(ChessPiece):
         super().__init__(color, Piece.ROOK)
         self.value = 5
         self.moves_list = []
-        for i in range(8):
+        for i in range(7):
             self.moves_list.append((0, i + 1))
             self.moves_list.append((0, -i - 1))
             self.moves_list.append((i + 1, 0))
@@ -47,5 +50,23 @@ class Bishop(ChessPiece):
     def __init__(self, color):
         super().__init__(color, Piece.BISHOP)
         self.value = 3
-        for i in range(8):
+        for i in range(7):
             self.moves_list.extend([(i + 1, i + 1), (i + 1, -i - 1), (-i - 1, i + 1), (-i - 1, -i - 1)])
+
+
+class Queen(ChessPiece):
+    def __init__(self, color):
+        super().__init__(color, Piece.QUEEN)
+        self.value = 5
+        for i in range(7):
+            self.moves_list.extend([
+                (0, i + 1), (0, -i - 1), (i + 1, 0), (-i - 1, 0),
+                (i + 1, i + 1), (i + 1, -i - 1), (-i - 1, i + 1), (-i - 1, -i - 1)
+            ])
+
+
+class King(ChessPiece):
+    def __init__(self, color):
+        super().__init__(color, Piece.KING)
+        self.value = -1
+        self.moves_list = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]

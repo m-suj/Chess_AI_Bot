@@ -1,0 +1,39 @@
+from board import Board
+from player import Player
+from re import match
+
+
+class Game:
+    def __init__(self):
+        self.move_pattern = r'^[a-hA-H][1-8]:[a-hA-H][1-8]$'
+        self.board = Board()
+        # Players
+        self.player_1 = Player('white')
+        self.player_2 = Player('black')
+        self.turn = self.player_1  # active player
+
+        # Game state
+        self.winner = None
+
+    def draw_board(self):
+        self.board.draw_board()
+        print(f'{self.turn.color.capitalize()}\'s turn')
+
+    def play_turn(self):
+        """Function responsible for main game loop, executing it plays an entire active player's turn
+        and switches to the next player"""
+        move_status = -1
+        while move_status == -1:
+            # Board checks legality of the move and returns 0 in case of a successfully executed move, and -1 otherwise
+            # Appropriate feedback messages are implemented in board's method
+            move: str = self.turn.play_turn()
+            if match(self.move_pattern, move):
+                move_status = self.board.execute_move(self.turn.color, move[:2], move[3:5])
+            else:
+                print('This isn\'t a valid move format, please try again')
+
+        # Next player
+        if self.turn is self.player_1:
+            self.turn = self.player_2
+        else:
+            self.turn = self.player_1

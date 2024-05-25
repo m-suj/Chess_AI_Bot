@@ -1,11 +1,11 @@
-from board import Board
+from game import Game
 
 
 def main():
-    b = Board()
-    b.draw_board()
-    b.execute_move('white', 'h1', 'e3')
-    b.draw_board()
+    game = Game()
+    while not game.winner:
+        game.draw_board()
+        game.play_turn()
 
 
 if __name__ == '__main__':
