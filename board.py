@@ -1,18 +1,9 @@
-from pieces import Piece
+from pieces import PieceID
 from chess_piece import *
 
 
-def sign(x):
-    if x > 0:
-        return 1
-    if x == 0:
-        return 0
-    if x < 0:
-        return -1
-
-
 class Board:
-    def __init__(self):
+    def __init__(self) -> None:
         self.board = [[None for _ in range(8)] for __ in range(8)]
         self.pieces = {
             'w_pawn': Pawn('white'),
@@ -55,58 +46,43 @@ class Board:
                 self.pieces[color + 'rook']
             )
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int) -> list:
         return self.board[item]
 
+    def execute_move(self, color: str, start: str, end: str) -> bool:
+        """
+        Board's method for managing logic behind making a move in chess.
+        :param color: 'white' or 'black'
+        :param start: starting position, given by the regex format [a-hA-H][1:8]
+        :param end: end position, given by the regex format [a-hA-H][1:8]
+        """
 
-    def execute_move(self, color, start, end):
-        """Start/End format: 2-letter strings describing the position on the board: {'a-h'+'1-8'}"""
-        # TODO: Movement logic, for now it is very simple, mostly started to test out managing pieces on the board
+        # Support variable declaration
         s, e = (ord(start[0]) - 97, int(start[1]) - 1), (ord(end[0]) - 97, int(end[1]) - 1)
-        piece = self[s[0]][s[1]]
-        end_piece = self[e[0]][e[1]]
-        move = e[0] - s[0], e[1] - s[1]
+        piece: ChessPiece = self[s[0]][s[1]]  # Piece standing on param:start tile, that is requested to be moved
+        end_piece = self[e[0]][e[1]]  # Piece standing on param:end tile
+        move = e[0] - s[0], e[1] - s[1]  # (x_delta, y_delta)
 
+        # Check basic legality of the move -
+        # - if piece being moved is in correct color and if there exists an end piece that's the same color
         if not piece or piece.color != color or (end_piece and end_piece.color == color):
             print('Cannot execute the move, try again')
-            return -1
-        if move not in piece.moves_list:
-            # Checking if the move is a pawn capturing an opponent's piece or a pawn moving two tiles in its first move
-            if piece.id == Piece.PAWN:
-                if (s[1] != 1 or move[1]) != 2 and (s[1] != 6 or move[1] != -2):
-                    if move not in piece.capture_moves_pawn or not end_piece:
-                        print('Cannot execute the move, try again')
-                        return -1
-                elif self[s[0]][s[1] + sign(move[1])]:
-                    print('Cannot execute the move, try again')
-                    return -1
-            else:
-                print('Cannot execute the move, try again')
-                return -1
+            return False
+
+        # Analyze move based on piece's movement rules
+        move_status = piece.check_move(self, move=move, start=s, end=e)
+
+        # Updating the board
+        if move_status:
+            self[e[0]][e[1]] = self[s[0]][s[1]]
+            self[s[0]][s[1]] = None
+
+            # TODO: 'Check' detection
+
+            print(f'Moving {s} to {e}')
         else:
-            if piece.id == Piece.PAWN and end_piece:
-                print('Cannot execute the move, try again')
-                return -1
-            if piece.id == Piece.ROOK or piece.id == Piece.BISHOP or piece.id == Piece.QUEEN:
-                diff = (sign(move[0]), sign(move[1]))
-                x, y = move[0] - diff[0], move[1] - diff[1]
-
-                while x != 0 or y != 0:
-                    if self[s[0] + x][s[1] + y]:
-                        print(f'{move=}')
-                        print(f'{s=}')
-                        print(f'{e=}')
-                        print(f'{x=}, {y=}')
-                        print(self[x][y])
-                        print('Cannot execute the move, try again')
-                        return -1
-                    x -= diff[0]
-                    y -= diff[1]
-
-        self[e[0]][e[1]] = self[s[0]][s[1]]
-        self[s[0]][s[1]] = None
-        print(f'Moving {s} to {e}')
-        return 0
+            print('Cannot execute the move, try again')
+        return move_status
 
 
     def draw_board(self):

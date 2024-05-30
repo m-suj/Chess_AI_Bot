@@ -22,8 +22,8 @@ class Game:
     def play_turn(self):
         """Function responsible for main game loop, executing it plays an entire active player's turn
         and switches to the next player"""
-        move_status = -1
-        while move_status == -1:
+        move_status = False
+        while not move_status:
             # Board checks legality of the move and returns 0 in case of a successfully executed move, and -1 otherwise
             # Appropriate feedback messages are implemented in board's method
             move: str = self.turn.play_turn()
