@@ -39,12 +39,13 @@ class Board:
                 self.pieces[color + 'rook'],
                 self.pieces[color + 'knight'],
                 self.pieces[color + 'bishop'],
-                self.pieces[color + 'king'],  # To be replaced
-                self.pieces[color + 'queen'],  # To be replaced
+                self.pieces[color + 'king'],
+                self.pieces[color + 'queen'],
                 self.pieces[color + 'bishop'],
                 self.pieces[color + 'knight'],
                 self.pieces[color + 'rook']
             )
+            self.kings_positions = {'white': (3, 0), 'black': (3, 7)}
 
     def __getitem__(self, item: int) -> list:
         return self.board[item]
@@ -73,16 +74,63 @@ class Board:
         move_status = piece.check_move(self, move=move, start=s, end=e)
 
         # Updating the board
-        if move_status:
-            self[e[0]][e[1]] = self[s[0]][s[1]]
-            self[s[0]][s[1]] = None
-
-            # TODO: 'Check' detection
-
-            print(f'Moving {s} to {e}')
-        else:
+        if not move_status:
             print('Cannot execute the move, try again')
-        return move_status
+            return False
+
+        buffer = self[e[0]][e[1]]
+        self[e[0]][e[1]] = self[s[0]][s[1]]
+        self[s[0]][s[1]] = None
+        if piece.id == PieceID.KING:
+            self.kings_positions[piece.color] = e
+
+        # Exposing your own king - move has to be undone
+        own_king_exposed = self.check_detection(color)
+        if own_king_exposed:
+            self[s[0]][s[1]] = piece
+            self[e[0]][e[1]] = buffer
+            if piece.id == PieceID.KING:
+                self.kings_positions[piece.color] = s
+            print('You can\'t do this move, your king will be exposed!')
+            return False
+
+        # Checking an enemy's king - checkmate procedure
+        enemy_king_checked = self.check_detection('white' if color == 'black' else 'black')
+        if enemy_king_checked:
+            print('CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            # TODO: checkmate detection
+
+        print(f'Moving {s} to {e}')
+        return True
+
+    def check_detection(self, color) -> bool:
+        # King check detection - illegal move, will return 'True' regardless of color,
+        # which triggers a move undo procedure in self.execute_move
+        if (
+                self.kings_positions['white'][0] - self.kings_positions['black'][0],
+                self.kings_positions['white'][1] - self.kings_positions['black'][1]
+        ) in self.pieces['w_king'].moves_list:
+            return True
+
+        king_pos = self.kings_positions[color]
+
+        # Pawn check detection
+        side = 1 if color == 'white' else -1
+        tiles = self[king_pos[0] + 1][king_pos[1] + side], self[king_pos[0] - 1][king_pos[1] + side]
+        for tile in tiles:
+            if tile and tile.id == PieceID.PAWN and tile.color != color:
+                return True
+
+        # Other (rook, bishop, queen, knight) check detection
+        for i in range(8):
+            for j in range(8):
+                piece = self[i][j]
+                if piece and piece.color != color and piece.id not in[PieceID.KING, PieceID.PAWN]:
+                    capture_move = king_pos[0] - i, king_pos[1] - j
+                    if capture_move in piece.moves_list and piece.check_move(self, capture_move, (i, j), king_pos):
+                        return True
+
+        return False
 
 
     def draw_board(self):

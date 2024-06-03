@@ -93,8 +93,8 @@ class Knight(ChessPiece):
         self.value = 3
         self.moves_list = [(1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1)]
 
-    def check_move(self, *args, **kwargs) -> bool:
-        return True
+    def check_move(self, board, move, start, end) -> bool:
+        return move in self.moves_list
 
 
 class Bishop(ChessPiece):
@@ -123,4 +123,4 @@ class King(ChessPiece):
         self.moves_list = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
     def check_move(self, board, move, start, end) -> bool:
-        return move[0] + move[1] <= 2 and (move[0] == 1 or move[1] == 1)
+        return move in self.moves_list
