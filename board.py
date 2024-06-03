@@ -20,6 +20,8 @@ class Board:
             'b_king': King('black')
             # Queen and King to be added
         }
+        self.check = None
+        self.mate = None
 
         # Set up the pieces
         for i in range(8):
@@ -58,15 +60,14 @@ class Board:
         :param end: end position, given by the regex format [a-hA-H][1:8]
         """
 
-        # Support variable declaration
+        # Support variables declaration
         s, e = (ord(start[0]) - 97, int(start[1]) - 1), (ord(end[0]) - 97, int(end[1]) - 1)
         piece: ChessPiece = self[s[0]][s[1]]  # Piece standing on param:start tile, that is requested to be moved
         end_piece = self[e[0]][e[1]]  # Piece standing on param:end tile
         move = e[0] - s[0], e[1] - s[1]  # (x_delta, y_delta)
 
-        # Check basic legality of the move -
-        # - if piece being moved is in correct color and if there exists an end piece that's the same color
-        if not piece or piece.color != color or (end_piece and end_piece.color == color):
+        # Check if the player is allowed to move the piece in the first place
+        if not piece or piece.color != color:
             print('Cannot execute the move, try again')
             return False
 
@@ -87,7 +88,7 @@ class Board:
         # Exposing your own king - move has to be undone
         own_king_exposed = self.check_detection(color)
         if own_king_exposed:
-            self[s[0]][s[1]] = piece
+            self[s[0]][s[1]] = self[e[0]][e[1]]
             self[e[0]][e[1]] = buffer
             if piece.id == PieceID.KING:
                 self.kings_positions[piece.color] = s
@@ -95,15 +96,57 @@ class Board:
             return False
 
         # Checking an enemy's king - checkmate procedure
-        enemy_king_checked = self.check_detection('white' if color == 'black' else 'black')
-        if enemy_king_checked:
-            print('CHECK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-            # TODO: checkmate detection
+        enemy_color = 'white' if color == 'black' else 'black'
+        enemy_king_checked = self.check_detection(enemy_color)
+        if not enemy_king_checked:
+            self.check = None
+        else:
+            self.check = enemy_color
+            self.mate = enemy_color  # Assuming that the king is checkmated and searching for a chance to escape
+
+            # Checking if moving the king allows to avoid 'check'
+            original_king_pos = self.kings_positions[enemy_color]
+            for i in range(8):
+                if not self.mate:
+                    break
+                for j in range(8):
+                    piece: ChessPiece = self[i][j]
+                    if piece and piece.color == self.check:
+                        moves_list = []
+                        if piece.id == PieceID.PAWN:
+                            moves_list.extend(piece.capture_moves_pawn)
+                            if j == 1 or j == 6:
+                                moves_list.extend(piece.first_moves)
+                        moves_list.extend(piece.moves_list)
+                        for m in moves_list:
+                            if i + m[0] >= 8 or j + m[1] >= 8:
+                                continue
+                            if piece.check_move(self, m, (i, j), (i + m[0], j + m[1])):
+                                if piece.id == PieceID.KING:
+                                    self.kings_positions[enemy_color] = (i + m[0], j + m[1])
+                                buffer = self[i + m[0]][j + m[1]]
+                                self[i + m[0]][j + m[1]] = self[i][j]
+                                self[i][j] = None
+
+                                if not self.check_detection(enemy_color):
+                                    print(f'DEBUG: Piece {piece.id} can be moved from {(i, j)} to {(i + m[0], j + m[1])} to avoid check')
+                                    self.mate = None
+                                # TODO: !!!!!!! Fix the bug that causes king to be allowed to move into pieces that are
+                                #       the same color as him
+                                if piece.id == PieceID.KING:
+                                    self.kings_positions[enemy_color] = (i, j)
+                                self[i][j] = self[i + m[0]][j + m[1]]
+                                self[i + m[0]][j + m[1]] = buffer
+
+                                if not self.mate:
+                                    break
 
         print(f'Moving {s} to {e}')
+        if self.mate:
+            print(f'MATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         return True
 
-    def check_detection(self, color) -> bool:
+    def check_detection(self, color: str) -> bool:
         # King check detection - illegal move, will return 'True' regardless of color,
         # which triggers a move undo procedure in self.execute_move
         if (

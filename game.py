@@ -17,7 +17,12 @@ class Game:
 
     def draw_board(self):
         self.board.draw_board()
-        print(f'{self.turn.color.capitalize()}\'s turn')
+        if self.winner:
+            print(f'Player {self.winner} wins!!!!!')
+        else:
+            if self.board.check:
+                print('Check!')
+            print(f'{self.turn.color.capitalize()}\'s turn')
 
     def play_turn(self):
         """Function responsible for main game loop, executing it plays an entire active player's turn
@@ -28,9 +33,14 @@ class Game:
             # Appropriate feedback messages are implemented in board's method
             move: str = self.turn.play_turn()
             if match(self.move_pattern, move):
+                move = move.lower()
                 move_status = self.board.execute_move(self.turn.color, move[:2], move[3:5])
             else:
                 print('This isn\'t a valid move format, please try again')
+
+        # Check or mate?
+        if self.board.mate:
+            self.winner = self.turn
 
         # Next player
         if self.turn is self.player_1:

@@ -17,12 +17,18 @@ class ChessPiece:
         self.moves_list = []
 
     def __repr__(self) -> str:
-        return str(self.id.value)
+        return self.color[0] + str(self.id.value)
 
     def get_moves(self) -> list[tuple[int, int]]:
         return self.moves_list
 
-    def check_move(self, board, move: tuple[int, int], start: tuple[int, int], end: tuple[int, int]) -> bool:
+    def check_move(
+            self,
+            board,
+            move: tuple[int, int],
+            start: tuple[int, int],
+            end: tuple[int, int]
+    ) -> bool:
         """
         Default movement legality check for Rook, Bishop and Queen
         :param board: a board.Board object
@@ -31,16 +37,13 @@ class ChessPiece:
         :param end: (x_end, y_end), determines ending position of moved piece
         :return: True or False, Determines legality of move
         """
+        if board[end[0]][end[1]] and board[end[0]][end[1]] == self.color:
+            return False
         diff = (sign(move[0]), sign(move[1]))
         x, y = move[0] - diff[0], move[1] - diff[1]
 
         while x != 0 or y != 0:
             if board[start[0] + x][start[1] + y]:
-                print(f'{move=}')
-                print(f'{start=}')
-                print(f'{end=}')
-                print(f'{x=}, {y=}')
-                print(board[x][y])
                 return False
             x -= diff[0]
             y -= diff[1]
@@ -65,6 +68,8 @@ class Pawn(ChessPiece):
 
     def check_move(self, board, move, start, end) -> bool:
         end_piece = board[end[0]][end[1]]
+        if end_piece and end_piece == self.color:
+            return False
         if move not in self.moves_list:
             if move not in self.first_moves:
                 if move not in self.capture_moves_pawn or not end_piece:
@@ -94,6 +99,8 @@ class Knight(ChessPiece):
         self.moves_list = [(1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1)]
 
     def check_move(self, board, move, start, end) -> bool:
+        if board[end[0]][end[1]] and board[end[0]][end[1]] == self.color:
+            return False
         return move in self.moves_list
 
 
@@ -123,4 +130,8 @@ class King(ChessPiece):
         self.moves_list = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
     def check_move(self, board, move, start, end) -> bool:
+        if board[end[0]][end[1]] and board[end[0]][end[1]] == self.color:
+            print(board[end[0]][end[1]].color)
+            print(self.color)
+            return False
         return move in self.moves_list
