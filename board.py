@@ -131,8 +131,7 @@ class Board:
                                 if not self.check_detection(enemy_color):
                                     print(f'DEBUG: Piece {piece.id} can be moved from {(i, j)} to {(i + m[0], j + m[1])} to avoid check')
                                     self.mate = None
-                                # TODO: !!!!!!! Fix the bug that causes king to be allowed to move into pieces that are
-                                #       the same color as him
+
                                 if piece.id == PieceID.KING:
                                     self.kings_positions[enemy_color] = (i, j)
                                 self[i][j] = self[i + m[0]][j + m[1]]

@@ -18,7 +18,7 @@ class Game:
     def draw_board(self):
         self.board.draw_board()
         if self.winner:
-            print(f'Player {self.winner} wins!!!!!')
+            print(f'Player {self.winner.color} wins!!!!!')
         else:
             if self.board.check:
                 print('Check!')
@@ -38,7 +38,7 @@ class Game:
             else:
                 print('This isn\'t a valid move format, please try again')
 
-        # Check or mate?
+        # Checkmate?
         if self.board.mate:
             self.winner = self.turn
 

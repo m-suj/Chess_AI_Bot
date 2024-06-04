@@ -130,8 +130,6 @@ class King(ChessPiece):
         self.moves_list = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
     def check_move(self, board, move, start, end) -> bool:
-        if board[end[0]][end[1]] and board[end[0]][end[1]] == self.color:
-            print(board[end[0]][end[1]].color)
-            print(self.color)
+        if board[end[0]][end[1]] and board[end[0]][end[1]].color == self.color:
             return False
         return move in self.moves_list
