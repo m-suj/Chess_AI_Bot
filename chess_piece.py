@@ -1,13 +1,9 @@
 from pieces import PieceID
+from chess_move_exceptions import *
 
 
-def sign(x):
-    if x > 0:
-        return 1
-    if x == 0:
-        return 0
-    if x < 0:
-        return -1
+def sign(x: int) -> int:
+    return 1 if x > 0 else -1 if x < 0 else 0
 
 
 class ChessPiece:
@@ -22,13 +18,19 @@ class ChessPiece:
     def get_moves(self) -> list[tuple[int, int]]:
         return self.moves_list
 
-    def check_move(
+    def check_move(self, board, move, start, end) -> None:
+        end_piece = board[end[0]][end[1]]
+        if end_piece and end_piece.color == self.color:
+            raise CapturedOwnPiece
+        self.check_move_detailed(board, move, start, end)
+
+    def check_move_detailed(
             self,
             board,
             move: tuple[int, int],
             start: tuple[int, int],
             end: tuple[int, int]
-    ) -> bool:
+    ) -> None:
         """
         Default movement legality check for Rook, Bishop and Queen
         :param board: a board.Board object
@@ -37,18 +39,16 @@ class ChessPiece:
         :param end: (x_end, y_end), determines ending position of moved piece
         :return: True or False, Determines legality of move
         """
-        if board[end[0]][end[1]] and board[end[0]][end[1]] == self.color:
-            return False
+        if move not in self.moves_list:
+            raise InvalidMove
         diff = (sign(move[0]), sign(move[1]))
         x, y = move[0] - diff[0], move[1] - diff[1]
 
         while x != 0 or y != 0:
             if board[start[0] + x][start[1] + y]:
-                return False
+                raise GoingThroughPiece
             x -= diff[0]
             y -= diff[1]
-
-        return True
 
 
 class Pawn(ChessPiece):
@@ -66,18 +66,22 @@ class Pawn(ChessPiece):
             self.moves_list = [(0, -1)]
             self.first_moves = [(0, -2)]
 
-    def check_move(self, board, move, start, end) -> bool:
+    def check_move_detailed(self, board, move, start, end) -> None:
         end_piece = board[end[0]][end[1]]
-        if end_piece and end_piece == self.color:
-            return False
         if move not in self.moves_list:
             if move not in self.first_moves:
-                if move not in self.capture_moves_pawn or not end_piece:
-                    return False
-            elif board[start[0]][start[1] + sign(move[1])] or (start[1] != 1 and start[1] != 6):
-                return False
+                if move not in self.capture_moves_pawn:
+                    raise InvalidMove
+                if not end_piece:
+                    raise PawnNothingToCapture
+            if start[1] != 1 and start[1] != 6:
+                raise PawnNotFirstMove
+            if board[start[0]][start[1] + sign(move[1])]:
+                raise GoingThroughPiece
 
-        return not end_piece
+        if end_piece:
+            raise PawnCannotCapture
+        return True
 
 
 class Rook(ChessPiece):
@@ -92,16 +96,16 @@ class Rook(ChessPiece):
             self.moves_list.append((-i - 1, 0))
 
 
+
 class Knight(ChessPiece):
     def __init__(self, color):
         super().__init__(color, PieceID.KNIGHT)
         self.value = 3
         self.moves_list = [(1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1)]
 
-    def check_move(self, board, move, start, end) -> bool:
-        if board[end[0]][end[1]] and board[end[0]][end[1]] == self.color:
-            return False
-        return move in self.moves_list
+    def check_move_detailed(self, board, move, start, end) -> None:
+        if move not in self.moves_list:
+            raise InvalidMove
 
 
 class Bishop(ChessPiece):
@@ -129,7 +133,6 @@ class King(ChessPiece):
         self.value = -1
         self.moves_list = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
-    def check_move(self, board, move, start, end) -> bool:
-        if board[end[0]][end[1]] and board[end[0]][end[1]].color == self.color:
-            return False
-        return move in self.moves_list
+    def check_move_detailed(self, board, move, start, end) -> bool:
+        if move not in self.moves_list:
+            raise InvalidMove

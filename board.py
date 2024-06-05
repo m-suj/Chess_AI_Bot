@@ -1,5 +1,6 @@
 from pieces import PieceID
 from chess_piece import *
+from chess_move_exceptions import *
 
 
 class Board:
@@ -18,7 +19,6 @@ class Board:
             'b_queen': Queen('black'),
             'w_king': King('white'),
             'b_king': King('black')
-            # Queen and King to be added
         }
         self.check = None
         self.mate = None
@@ -52,7 +52,12 @@ class Board:
     def __getitem__(self, item: int) -> list:
         return self.board[item]
 
-    def execute_move(self, color: str, start: str, end: str) -> bool:
+    def execute_move(
+            self,
+            color: str,
+            start: str,
+            end: str
+    ) -> ChessPiece:
         """
         Board's method for managing logic behind making a move in chess.
         :param color: 'white' or 'black'
@@ -60,25 +65,24 @@ class Board:
         :param end: end position, given by the regex format [a-hA-H][1:8]
         """
 
-        # Support variables declaration
+        # Unpacking start/end and creating support variables
         s, e = (ord(start[0]) - 97, int(start[1]) - 1), (ord(end[0]) - 97, int(end[1]) - 1)
         piece: ChessPiece = self[s[0]][s[1]]  # Piece standing on param:start tile, that is requested to be moved
-        end_piece = self[e[0]][e[1]]  # Piece standing on param:end tile
         move = e[0] - s[0], e[1] - s[1]  # (x_delta, y_delta)
 
-        # Check if the player is allowed to move the piece in the first place
-        if not piece or piece.color != color:
-            print('Cannot execute the move, try again')
-            return False
+        # Checking if the player is allowed to move the piece in the first place
+        if not piece:
+            raise NoPiece
+        if piece.color != color:
+            raise WrongPiece
 
         # Analyze move based on piece's movement rules
-        move_status = piece.check_move(self, move=move, start=s, end=e)
+        try:
+            piece.check_move(self, move=move, start=s, end=e)
+        except CapturedOwnPiece or GoingThroughPiece as exception:
+            raise exception
 
         # Updating the board
-        if not move_status:
-            print('Cannot execute the move, try again')
-            return False
-
         buffer = self[e[0]][e[1]]
         self[e[0]][e[1]] = self[s[0]][s[1]]
         self[s[0]][s[1]] = None
@@ -92,17 +96,18 @@ class Board:
             self[e[0]][e[1]] = buffer
             if piece.id == PieceID.KING:
                 self.kings_positions[piece.color] = s
-            print('You can\'t do this move, your king will be exposed!')
-            return False
+            raise KingExposed
 
+        # ##############################################
         # Checking an enemy's king - checkmate procedure
+        # ##############################################
         enemy_color = 'white' if color == 'black' else 'black'
         enemy_king_checked = self.check_detection(enemy_color)
         if not enemy_king_checked:
             self.check = None
         else:
             self.check = enemy_color
-            self.mate = enemy_color  # Assuming that the king is checkmated and searching for a chance to escape
+            self.mate = enemy_color  # Assuming that the king is checkmated and looking for a chance to escape
 
             # Checking if moving the king allows to avoid 'check'
             original_king_pos = self.kings_positions[enemy_color]
@@ -110,40 +115,41 @@ class Board:
                 if not self.mate:
                     break
                 for j in range(8):
-                    piece: ChessPiece = self[i][j]
-                    if piece and piece.color == self.check:
+                    _piece: ChessPiece = self[i][j]
+                    if _piece and _piece.color == self.check:
                         moves_list = []
-                        if piece.id == PieceID.PAWN:
-                            moves_list.extend(piece.capture_moves_pawn)
+                        if _piece.id == PieceID.PAWN:
+                            moves_list.extend(_piece.capture_moves_pawn)
                             if j == 1 or j == 6:
-                                moves_list.extend(piece.first_moves)
-                        moves_list.extend(piece.moves_list)
+                                moves_list.extend(_piece.first_moves)
+                        moves_list.extend(_piece.moves_list)
                         for m in moves_list:
                             if i + m[0] >= 8 or j + m[1] >= 8:
                                 continue
-                            if piece.check_move(self, m, (i, j), (i + m[0], j + m[1])):
-                                if piece.id == PieceID.KING:
-                                    self.kings_positions[enemy_color] = (i + m[0], j + m[1])
-                                buffer = self[i + m[0]][j + m[1]]
-                                self[i + m[0]][j + m[1]] = self[i][j]
-                                self[i][j] = None
 
-                                if not self.check_detection(enemy_color):
-                                    print(f'DEBUG: Piece {piece.id} can be moved from {(i, j)} to {(i + m[0], j + m[1])} to avoid check')
-                                    self.mate = None
+                            try:
+                                _piece.check_move(self, m, (i, j), (i + m[0], j + m[1]))
+                            except ChessException as e:
+                                continue
+                            if _piece.id == PieceID.KING:
+                                self.kings_positions[enemy_color] = (i + m[0], j + m[1])
+                            buffer = self[i + m[0]][j + m[1]]
+                            self[i + m[0]][j + m[1]] = self[i][j]
+                            self[i][j] = None
 
-                                if piece.id == PieceID.KING:
-                                    self.kings_positions[enemy_color] = (i, j)
-                                self[i][j] = self[i + m[0]][j + m[1]]
-                                self[i + m[0]][j + m[1]] = buffer
+                            if not self.check_detection(enemy_color):
+                                self.mate = None
 
-                                if not self.mate:
-                                    break
+                            if _piece.id == PieceID.KING:
+                                self.kings_positions[enemy_color] = (i, j)
+                            self[i][j] = self[i + m[0]][j + m[1]]
+                            self[i + m[0]][j + m[1]] = buffer
 
-        print(f'Moving {s} to {e}')
-        if self.mate:
-            print(f'MATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        return True
+                            if not self.mate:
+                                break
+
+        return piece
+
 
     def check_detection(self, color: str) -> bool:
         # King check detection - illegal move, will return 'True' regardless of color,
@@ -166,16 +172,21 @@ class Board:
         # Other (rook, bishop, queen, knight) check detection
         for i in range(8):
             for j in range(8):
-                piece = self[i][j]
+                piece: ChessPiece = self[i][j]
                 if piece and piece.color != color and piece.id not in[PieceID.KING, PieceID.PAWN]:
                     capture_move = king_pos[0] - i, king_pos[1] - j
-                    if capture_move in piece.moves_list and piece.check_move(self, capture_move, (i, j), king_pos):
-                        return True
+                    if capture_move in piece.moves_list:
+                        try:
+                            piece.check_move(self, capture_move, (i, j), king_pos)
+                            return True
+                        except ChessException as e:
+                            continue
 
         return False
 
 
     def draw_board(self):
+        print('\n')
         print('/'*47, end='\n\n\n')
         print('\t', end='')
         for i in range(7, -1, -1):
