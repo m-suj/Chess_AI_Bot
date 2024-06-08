@@ -74,14 +74,14 @@ class Pawn(ChessPiece):
                     raise InvalidMove
                 if not end_piece:
                     raise PawnNothingToCapture
-            if start[1] != 1 and start[1] != 6:
-                raise PawnNotFirstMove
-            if board[start[0]][start[1] + sign(move[1])]:
-                raise GoingThroughPiece
+            else:
+                if start[1] != 1 and start[1] != 6:
+                    raise PawnNotFirstMove
+                if board[start[0]][start[1] + sign(move[1])]:
+                    raise GoingThroughPiece
 
-        if end_piece:
+        elif end_piece:
             raise PawnCannotCapture
-        return True
 
 
 class Rook(ChessPiece):

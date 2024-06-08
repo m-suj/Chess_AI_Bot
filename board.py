@@ -188,24 +188,24 @@ class Board:
     def draw_board(self):
         print('\n')
         print('/'*47, end='\n\n\n')
-        print('\t', end='')
+        print('   ', end='')
         for i in range(7, -1, -1):
-            print(f'|{chr(i + 65)}\t', end='')
+            print(f'|{chr(i + 65)}  ', end='')
         print('|')
 
         for row in range(8):
-            print('_' * 37)
-            print(f'{row + 1}', end='\t')
+            print('_' * 36)
+            print(f'{row + 1}', end='  ')
             for col in range(7, -1, -1):
                 print('|', end='')
 
                 # Print a piece
-                print('' if self.board[col][row] is None else self.board[col][row], end='\t')
+                print('  ' if self.board[col][row] is None else self.board[col][row], end=' ')
 
             print('|')
 
-        print('_' * 37)
-        print('\t', end='')
+        print('_' * 36)
+        print('   ', end='')
         for i in range(7, -1, -1):
-            print(f'|{chr(i + 65)}\t', end='')
+            print(f'|{chr(i + 65)}  ', end='')
         print('|', end='\n\n\n')

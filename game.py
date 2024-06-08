@@ -37,10 +37,10 @@ class Game:
                 f'GOOD LUCK!\n')
 
         if self.winner:
-            print(f'Checkmate! Player {self.winner.color} wins!!!!!')
+            print(f'CHECKMATE! PLAYER {self.winner.name} ({self.winner.color}) WINS!')
         else:
             if self.board.check:
-                print('Check!')
+                print('CHECK!!!')
             print(f'{self.turn.color.capitalize()}\'s turn')
 
 
