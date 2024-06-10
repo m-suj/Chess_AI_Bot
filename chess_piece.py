@@ -57,6 +57,7 @@ class Pawn(ChessPiece):
         self.value = 1
         self.capture_moves_pawn = []
         self.first_moves = []
+        self.en_passant_previous = None
         if self.color == 'white':
             self.capture_moves_pawn = [(1, 1), (-1, 1)]
             self.moves_list = [(0, 1)]
@@ -66,6 +67,13 @@ class Pawn(ChessPiece):
             self.moves_list = [(0, -1)]
             self.first_moves = [(0, -2)]
 
+    def en_passant_update(self, board):
+        if self.color == 'white':
+            y1, y2 = 4, 5
+        else:
+            y1, y2 = 2, 3
+        self.en_passant_previous = [[board[i][y1], board[i][y2]] for i in range(8)]
+
     def check_move_detailed(self, board, move, start, end) -> None:
         end_piece = board[end[0]][end[1]]
         if move not in self.moves_list:
@@ -73,6 +81,11 @@ class Pawn(ChessPiece):
                 if move not in self.capture_moves_pawn:
                     raise InvalidMove
                 if not end_piece:
+                    en_passant = board[end[0]][end[1] - (1 if self.color == 'white' else -1)]
+                    if en_passant and start[1] == (4 if self.color == 'white' else 3):
+                        if self.en_passant_previous[end[0]] != [None, None]:
+                            raise BelatedEnPassant
+                        raise EnPassant
                     raise PawnNothingToCapture
             else:
                 if start[1] != 1 and start[1] != 6:

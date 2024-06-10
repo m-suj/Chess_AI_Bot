@@ -47,3 +47,13 @@ class PawnNothingToCapture(ChessException):
 class PawnCannotCapture(ChessException):
     def __init__(self):
         super().__init__('CANNOT EXECUTE: The pawn cannot capture with that move!')
+
+
+class BelatedEnPassant(ChessException):
+    def __init__(self):
+        super().__init__('CANNOT EXECUTE: You are too late, you can only enpass pawns that have just moved there by two tiles')
+
+
+class EnPassant(ChessException):
+    def __init__(self):
+        super().__init__('UNHANDLED EXCEPTION: Unusual move')

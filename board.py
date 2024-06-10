@@ -79,8 +79,8 @@ class Board:
         # Analyze move based on piece's movement rules
         try:
             piece.check_move(self, move=move, start=s, end=e)
-        except CapturedOwnPiece or GoingThroughPiece as exception:
-            raise exception
+        except EnPassant:
+            self[e[0]][e[1] - (1 if color == 'white' else -1)] = None
 
         # Updating the board
         buffer = self[e[0]][e[1]]
@@ -101,6 +101,7 @@ class Board:
         # ##############################################
         # Checking an enemy's king - checkmate procedure
         # ##############################################
+        en_passant_buffer = None
         enemy_color = 'white' if color == 'black' else 'black'
         enemy_king_checked = self.check_detection(enemy_color)
         if not enemy_king_checked:
@@ -112,8 +113,8 @@ class Board:
             # Checking if moving the king allows to avoid 'check'
             original_king_pos = self.kings_positions[enemy_color]
             for i in range(8):
-                if not self.mate:
-                    break
+                #if not self.mate:
+                #    break
                 for j in range(8):
                     _piece: ChessPiece = self[i][j]
                     if _piece and _piece.color == self.check:
@@ -129,8 +130,12 @@ class Board:
 
                             try:
                                 _piece.check_move(self, m, (i, j), (i + m[0], j + m[1]))
-                            except ChessException as e:
-                                continue
+                            except ChessException as exception:
+                                if exception == EnPassant:
+                                    en_passant_buffer = self[e[0]][e[1] - (1 if color == 'white' else -1)]
+                                    self[e[0]][e[1] - (1 if color == 'white' else -1)] = None
+                                else:
+                                    continue
                             if _piece.id == PieceID.KING:
                                 self.kings_positions[enemy_color] = (i + m[0], j + m[1])
                             buffer = self[i + m[0]][j + m[1]]
@@ -145,11 +150,15 @@ class Board:
                             self[i][j] = self[i + m[0]][j + m[1]]
                             self[i + m[0]][j + m[1]] = buffer
 
-                            if not self.mate:
-                                break
+                            if en_passant_buffer:
+                                self[e[0]][e[1] - (1 if color == 'white' else -1)] = en_passant_buffer
+                                en_passant_buffer = None
 
+                            #if not self.mate:
+                            #    break
+
+        self.pieces[color[0] + '_pawn'].en_passant_update(self)
         return piece
-
 
     def check_detection(self, color: str) -> bool:
         # King check detection - illegal move, will return 'True' regardless of color,
@@ -183,7 +192,6 @@ class Board:
                             continue
 
         return False
-
 
     def draw_board(self):
         print('\n')
