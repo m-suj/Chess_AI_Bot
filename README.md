@@ -1,11 +1,11 @@
 # Chess Engine in Python (using arcade)
 
-## Projekt powstał na zaliczenie kursu 'Python 2' na kierunku Informatyka w Uniwersytecie Dolnośląskim DSW we Wrocławiu przez studenta 1 roku Informatyki (Mateusz Sujewicz, nr indeksu: 52796)
+---
 
+## Projekt powstał na zaliczenie kursu 'Programowanie w języku Python 2' na II semestrze kierunku Informatyka w Uniwersytecie Dolnośląskim DSW we Wrocławiu
 
 Ten projekt został stworzony i był rozwijany z myślą o wsparciu gry przeciwko botowi (z użyciem sztucznej inteligencji, czy to w formie algorytmu szachowego czy na bazie systemu AI-generated response'ów). 
 Żaden z botów nie został jeszcze niestety zaimplementowany, wbrew temu co mówi nazwa projektu, jednak w planach mam dodanie takich funkcjonalności w ramach jego prywatnego rozwoju.
-
 
 Na tym etapie jednak stworzony został cały silnik do gry w szachy, zorganizowany tak, by można było grać dwoma graczami przeciwko sobie, a w przyszłości modyfikować własne zachowania graczy-botów. Uporządkowano również 
 (w mniejszym lub większym stopniu) strukturę danych projektu, tak, by poszczególne jego części w miarę przejrzysty sposób komunikowały się ze sobą (Board Interface - Board-Game channel, Game Interface - Game-Main channel: bardzo uproszczony).
@@ -13,11 +13,13 @@ Nieliczne wyjątki na obecnym etapie jednak obejmują brak roszad (Bicie w przel
 automatycznego obracania planszy zgodnie z kolorem aktywnego gracza.
 
 
+---
 ## Wykorzystane technologie: 
 Python3.12
 built-in moduły: re, enum
 
 
+---
 ## Zastosowane praktyki:
  - podział na klasy i moduły
  - dziedziczenie wspierające organizację klas
@@ -27,3 +29,9 @@ umieszczone w jednym pliku chess_exceptions.py)
 (z wyjątkiem podwojonych kopii wzgledem kolorów) - pozycje pionków przechowywane są przez obiekt klasy Board jako wskaźniki na pionki
  - numerajca ID pionków w celu minimalnej optymalizacji czasu sprawdzania rodzaju pionków
  - organizacja całej gry w sposób charakterystyczny dla silników zarządzania grami (wywoływanie aktualizacji i rysowania wszystkich komponentów gry, przechowywanie stanu aktualnej rozgrywki szachowej)
+
+
+
+---
+**Autor projektu:**
+Mateusz Sujewicz, student II semestru Informatyki na Uniwersytecie Dolnośląskim DSW we Wrocławiu
