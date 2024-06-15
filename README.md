@@ -15,7 +15,7 @@ automatycznego obracania planszy zgodnie z kolorem aktywnego gracza.
 
 ## Wykorzystane technologie: 
 Python3.12
-bbuilt-in moduły: re, enum
+built-in moduły: re, enum
 
 
 ## Zastosowane praktyki:
