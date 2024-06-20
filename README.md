@@ -2,19 +2,16 @@
 ---
 
 ## Projekt powstał na zaliczenie kursu 'Programowanie w języku Python 2' na II semestrze kierunku Informatyka w Uniwersytecie Dolnośląskim DSW we Wrocławiu
-Ten projekt został stworzony i był rozwijany z myślą o wsparciu gry przeciwko botowi (z użyciem sztucznej inteligencji, czy to w formie algorytmu szachowego czy na bazie systemu AI-generated response'ów). 
-Żaden z botów nie został jeszcze niestety zaimplementowany, wbrew temu co mówi nazwa projektu, jednak w planach mam dodanie takich funkcjonalności w ramach jego prywatnego rozwoju.
+Ten projekt został stworzony i był rozwijany z myślą o wsparciu gry przeciwko botowi (z użyciem sztucznej inteligencji, czy to w formie algorytmu szachowego czy na bazie systemu AI-generated response'ów).
 
-Na tym etapie jednak stworzony został cały silnik do gry w szachy, zorganizowany tak, by można było grać dwoma graczami przeciwko sobie, a w przyszłości modyfikować własne zachowania graczy-botów. Uporządkowano również 
-(w mniejszym lub większym stopniu) strukturę danych projektu, tak, by poszczególne jego części w miarę przejrzysty sposób komunikowały się ze sobą (Board Interface - Board-Game channel, Game Interface - Game-Main channel: bardzo uproszczony).
-Nieliczne wyjątki na obecnym etapie jednak obejmują brak roszad (Bicie w przelocie występuje i powinno działać zgodnie z regułami gry) oraz graficzny interfejs użytkownika, reprezentowany w terminalu, aczkolwiek z naciskiem na brak 
-automatycznego obracania planszy zgodnie z kolorem aktywnego gracza.
-
+Na tym etapie utworzony został działający (niemal w pełni - za wyjątkiem roszad, patu i zaawansowanych promocji) silnik szachowy, a także możliwość grania przeciwko botowi opartego na technologii Stockfish.
 
 ---
 ## Wykorzystane technologie: 
-Python3.12
-built-in moduły: re, enum
+- Python3.12
+- Built-in moduły: re, enum
+- Moduły chess oraz chess.engine
+- Zewnętrzne oprogramowanie Stockfish
 
 
 ---
@@ -27,7 +24,7 @@ umieszczone w jednym pliku chess_exceptions.py)
 (z wyjątkiem podwojonych kopii wzgledem kolorów) - pozycje pionków przechowywane są przez obiekt klasy Board jako wskaźniki na pionki
  - numerajca ID pionków w celu minimalnej optymalizacji czasu sprawdzania rodzaju pionków
  - organizacja całej gry w sposób charakterystyczny dla silników zarządzania grami (wywoływanie aktualizacji i rysowania wszystkich komponentów gry, przechowywanie stanu aktualnej rozgrywki szachowej)
-
+ - implementacja bota szachowego z wykorzystaniem zewnętrznych i wewnętrznych technologii (Stockfish i moduł chess.engine)
 
 
 ---
