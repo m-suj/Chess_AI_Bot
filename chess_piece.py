@@ -95,6 +95,8 @@ class Pawn(ChessPiece):
 
         elif end_piece:
             raise PawnCannotCapture
+        if end[1] == 0 or end[1] == 7:
+            raise Promotion
 
 
 class Rook(ChessPiece):

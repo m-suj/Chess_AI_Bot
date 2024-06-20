@@ -57,3 +57,8 @@ class BelatedEnPassant(ChessException):
 class EnPassant(ChessException):
     def __init__(self):
         super().__init__('UNHANDLED EXCEPTION: Unusual move')
+
+
+class Promotion(ChessException):
+    def __init__(self):
+        super().__init__('UNHANDLED EXCEPTION: Promotion')

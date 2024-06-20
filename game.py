@@ -12,7 +12,7 @@ class Game:
 
         # Players
         self.player_1 = Player('Player1', 'white')
-        self.player_2 = Player('Player2', 'black')
+        self.player_2 = Player('Player2', 'black', ai=True)
         self.turn = self.player_1  # active player
 
         # Game state
@@ -32,8 +32,8 @@ class Game:
         else:
             print(
                 f'GAME OF CHESS. '
-                f'PLAYER \'{self.player_1.name}\'({self.player_1.color}, {'bot' if self.player_1.ai else 'human'}) VS '
-                f'PLAYER \'{self.player_2.name}\'({self.player_2.color}, {'bot' if self.player_1.ai else 'human'}). \n'
+                f'PLAYER \'{self.player_1.name}\'({self.player_1.color}, {'bot' if self.player_1.is_ai else 'human'}) VS '
+                f'PLAYER \'{self.player_2.name}\'({self.player_2.color}, {'bot' if self.player_1.is_ai else 'human'}). \n'
                 f'GOOD LUCK!\n')
 
         if self.winner:
@@ -50,9 +50,14 @@ class Game:
         move_status = False
         while not move_status:
             # Checking validity of the move
-            move: str = self.turn.play_turn()
+            prev_move = None
+            if self.turn.is_ai and self.moves_log:
+                prev_move = self.moves_log[-1][1]
+                # Reformatting (a1:b2 -> a1b2)
+                prev_move = prev_move[:2] + prev_move[3:]
+            move: str = self.turn.play_turn(prev_move)
             move_status = True
-            if match(self.move_pattern, move):
+            if match(self.move_pattern, move[:5]):
                 move = move.lower()
                 try:
                     piece = self.board.execute_move(self.turn.color, move[:2], move[3:5])
